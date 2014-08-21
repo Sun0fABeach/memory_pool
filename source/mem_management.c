@@ -9,18 +9,18 @@ typedef unsigned char byte;
 
 #define BOUNDARIES_SIZE (2 * (sizeof(tag)))
 
-static tag *find_usable_segment(tag size);
-static void allocateExactFit(tag *segment_tag);
-static void allocateWithSplit(tag *segment_tag, tag requested_size);
-static void mergePrecedingSegment(tag *start_tag);
-static void mergeFollowingSegment(tag *end_tag);
-static tag *locateEndTag(tag *start_tag);
-static tag *locateStartTag(tag *end_tag);
-static bool segmentFree(tag *segment_tag);
-static bool segmentFits(tag *segment_tag, tag requested_size);
-static void setFree(tag *segment_tag);
-static void setUsed(tag *segment_tag);
-static void destroyPool();
+static inline tag *find_usable_segment(tag size);
+static inline void allocateExactFit(tag *segment_tag);
+static inline void allocateWithSplit(tag *segment_tag, tag requested_size);
+static inline void mergePrecedingSegment(tag *start_tag);
+static inline void mergeFollowingSegment(tag *end_tag);
+static inline tag *locateEndTag(tag *start_tag);
+static inline tag *locateStartTag(tag *end_tag);
+static inline bool segmentFree(tag *segment_tag);
+static inline bool segmentFits(tag *segment_tag, tag requested_size);
+static inline void setFree(tag *segment_tag);
+static inline void setUsed(tag *segment_tag);
+static inline void destroyPool();
 
 static byte *memory_pool;
 static tag *pool_first_tag,
@@ -45,7 +45,7 @@ void init_pool() {
   atexit(destroyPool);
 }
 
-static void destroyPool() {
+static inline void destroyPool() {
   free(memory_pool);
 }
 
@@ -82,7 +82,7 @@ void *allocate(size_t requested_size) {
 
 /* checks whether a fitting free segment second can be found.
  * returns pointer to that segment or NULL, if none is found. */
-static tag *find_usable_segment(tag size) {
+static inline tag *find_usable_segment(tag size) {
   tag *probe = (tag*)memory_pool;
 
   do {
@@ -97,7 +97,7 @@ static tag *find_usable_segment(tag size) {
 
 
 /* allocates memory without a new fragmentation split. */
-static void allocateExactFit(tag *segment_tag) {
+static inline void allocateExactFit(tag *segment_tag) {
   setUsed(segment_tag);
   segment_tag = locateEndTag(segment_tag);
   setUsed(segment_tag);
@@ -105,7 +105,7 @@ static void allocateExactFit(tag *segment_tag) {
 
 
 /* allocates memory with a new fragmentation split. */
-static void allocateWithSplit(tag *segment_tag, tag requested_size) {
+static inline void allocateWithSplit(tag *segment_tag, tag requested_size) {
   tag *start_tag = segment_tag;
   tag rest_size = *start_tag - requested_size - BOUNDARIES_SIZE;
 
@@ -140,7 +140,7 @@ void deallocate(void *segment) {
 
 /* frees the preceding segment and merges it with the free segment 
  * given via start_tag. */
-static void mergePrecedingSegment(tag *start_tag) {
+static inline void mergePrecedingSegment(tag *start_tag) {
   tag new_size = *start_tag + *(start_tag - 1) + BOUNDARIES_SIZE;
   *locateStartTag(start_tag - 1) = new_size;
   *locateEndTag(start_tag) = new_size;
@@ -149,7 +149,7 @@ static void mergePrecedingSegment(tag *start_tag) {
 
 /* frees the following segment and merges it with the free segment
  * given via end_tag. */
-static void mergeFollowingSegment(tag *end_tag) {
+static inline void mergeFollowingSegment(tag *end_tag) {
   tag new_size = *end_tag + *(end_tag + 1) + BOUNDARIES_SIZE;
   *locateStartTag(end_tag) = new_size;
   *locateEndTag(end_tag + 1) = new_size;
@@ -160,33 +160,33 @@ static void mergeFollowingSegment(tag *end_tag) {
 /********************** HELPERS ************************/
 
 /* returns corresponding end tag of given start tag. */
-static tag *locateEndTag(tag *start_tag) {
+static inline tag *locateEndTag(tag *start_tag) {
   return (tag*)((byte*)start_tag + (*start_tag & ~1) + sizeof(tag));
 }                         //& ~1 ignores used flag
 
 /* returns corresponding start tag of given end tag. */
-static tag *locateStartTag(tag *end_tag) {
+static inline tag *locateStartTag(tag *end_tag) {
   return (tag*)((byte*)end_tag - (*end_tag & ~1) - sizeof(tag));
 }
 
 /* checks whether the given segment is free. */
-static bool segmentFree(tag *segment_tag) {
+static inline bool segmentFree(tag *segment_tag) {
   return !(*segment_tag & 1);  //free if lsb == 0
 }
 
 /* checks whether the given segment holds enough
  * space for the requested size. */
-static bool segmentFits(tag *segment_tag, tag requested_size) {
+static inline bool segmentFits(tag *segment_tag, tag requested_size) {
   return requested_size <= *segment_tag;
 }
 
 /* marks this segment as free. */
-static void setFree(tag *segment_tag) {
+static inline void setFree(tag *segment_tag) {
   *segment_tag &= ~1;
 }
 
 /* marks this segment as used. */
-static void setUsed(tag *segment_tag) {
+static inline void setUsed(tag *segment_tag) {
   *segment_tag |= 1;
 }
 
