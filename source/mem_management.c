@@ -101,29 +101,23 @@ static inline Tag *find_usable_segment(size_t size) {
 /* allocates memory without a new fragmentation split. */
 static inline void allocateExactFit(Tag *segment_tag) {
   segment_tag->used = true;
-  segment_tag = locateEndTag(segment_tag);
-  segment_tag->used = true;
+  locateEndTag(segment_tag)->used = true;
 }
 
 
-/* allocates memory with a new fragmentation split. */
+/* allocates memory with a new fragmentation split.
+ * segment_tag points to start tag of the to-be-used segment. */
 static inline void allocateWithSplit(Tag *segment_tag, size_t requested_size) {
-  Tag *start_tag = segment_tag;
-  size_t rest_size = start_tag->size - requested_size - BOUNDARIES_SIZE;
+  size_t rest_size = segment_tag->size - requested_size - BOUNDARIES_SIZE;
 
   //set start/end tags of used segment with size and flag: 1
-  start_tag->size = requested_size;
-  start_tag->used = true;
-  segment_tag = locateEndTag(start_tag);
-  segment_tag->size = requested_size;
-  segment_tag->used = true;
+  *segment_tag = (Tag){ .size = requested_size, .used = true };
+  segment_tag = locateEndTag(segment_tag);
+  *segment_tag = (Tag){ .size = requested_size, .used = true };
 
   //set start/end tags of remaining segment with size and flag: 0
-  (++segment_tag)->size = rest_size;
-  segment_tag->used = false;
-  segment_tag = locateEndTag(segment_tag);
-  segment_tag->size = rest_size;
-  segment_tag->used = false;
+  *++segment_tag             = (Tag){ .size = rest_size, .used = false };
+  *locateEndTag(segment_tag) = (Tag){ .size = rest_size, .used = false };
 }
 
 
@@ -145,29 +139,21 @@ void deallocate(void *segment) {
 }
 
 
-/* frees the preceding segment and merges it with the free segment 
- * given via start_tag. */
+/* frees the preceding (lefthand) segment and merges it with the free segment.
+ * start_tag is the start tag of the original (righthand) free segment. */
 static inline void mergePrecedingSegment(Tag *start_tag) {
   size_t new_size = start_tag->size + (start_tag - 1)->size + BOUNDARIES_SIZE;
-  Tag *segment_tag = locateStartTag(start_tag - 1);
-  segment_tag->size = new_size;
-  segment_tag->used = false;
-  segment_tag = locateEndTag(start_tag);
-  segment_tag->size = new_size;
-  segment_tag->used = false;
+  *locateStartTag(start_tag - 1) = (Tag){ .size = new_size, .used = false };
+  *locateEndTag(start_tag)       = (Tag){ .size = new_size, .used = false };
 }
 
 
-/* frees the following segment and merges it with the free segment
- * given via end_tag. */
+/* frees the following (righthand) segment and merges it with the free segment
+ * end_tag is the end tag of the original (lefthand) free segment. */
 static inline void mergeFollowingSegment(Tag *end_tag) {
   size_t new_size = end_tag->size + (end_tag + 1)->size + BOUNDARIES_SIZE;
-  Tag *segment_tag = locateStartTag(end_tag);
-  segment_tag->size = new_size;
-  segment_tag->used = false;
-  segment_tag = locateEndTag(end_tag + 1);
-  segment_tag->size = new_size;
-  segment_tag->used = false;
+  *locateStartTag(end_tag)   = (Tag){ .size = new_size, .used = false };
+  *locateEndTag(end_tag + 1) = (Tag){ .size = new_size, .used = false };
 }
 
 
@@ -197,18 +183,14 @@ static inline bool segmentFits(Tag *segment_tag, size_t requested_size) {
 
 /* debugging function */
 void debugInfo() {
-  Tag *segment_tag;
-  byte *next_tag = memory_pool;
+  Tag *next_tag = (Tag*)memory_pool;
   byte *pool_ending = memory_pool + pool_size;
   bool is_end_tag = false;
-  int i = 0;
 
-  for(byte *p = memory_pool; p < pool_ending; p++, i++) {
-    if(p == next_tag) {
-      segment_tag = (Tag*)p;
-      printf("%d(%d)", segment_tag->size, segment_tag->used);
-      next_tag = is_end_tag ? next_tag + sizeof(Tag) :
-                              (byte*)locateEndTag(segment_tag);
+  for(byte *p = memory_pool, i = 0; p < pool_ending; p++, i++) {
+    if(p == (byte*)next_tag) {
+      printf("%d(%d)", next_tag->size, next_tag->used);
+      next_tag = is_end_tag ? next_tag + 1 : locateEndTag(next_tag);
       is_end_tag = !is_end_tag;
     } else {
       printf("%hhu", *p);
