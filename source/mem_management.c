@@ -17,6 +17,7 @@ static inline void allocateExactFit(Tag *segment_tag);
 static inline void allocateWithSplit(Tag *segment_tag, size_t requested_size);
 static inline void mergePrecedingSegment(Tag *start_tag);
 static inline void mergeFollowingSegment(Tag *end_tag);
+static inline void mergeSurroundingSegments(Tag *start_tag, Tag *end_tag);
 static inline Tag *locateEndTag(Tag *start_tag);
 static inline Tag *locateStartTag(Tag *end_tag);
 static inline bool segmentFree(Tag *segment_tag);
@@ -132,9 +133,15 @@ void deallocate(void *segment) {
   start_tag->used = false;
   end_tag->used = false;
 
-  if(start_tag != pool_first_tag && segmentFree(start_tag - 1))
-    mergePrecedingSegment(start_tag);
-  if(end_tag != pool_final_tag && segmentFree(end_tag + 1))
+  bool prev_free = start_tag != pool_first_tag && segmentFree(start_tag - 1);
+  bool next_free = end_tag != pool_final_tag && segmentFree(end_tag + 1);
+
+  if(prev_free)
+    if(next_free)
+      mergeSurroundingSegments(start_tag, end_tag);
+    else
+      mergePrecedingSegment(start_tag);
+  else if(next_free)
     mergeFollowingSegment(end_tag);
 }
 
@@ -156,6 +163,15 @@ static inline void mergeFollowingSegment(Tag *end_tag) {
   *locateEndTag(end_tag + 1) = (Tag){ .size = new_size, .used = false };
 }
 
+
+/* frees the surrounding segments and merges them with the free segment.
+ * start_tag and end_tag belong to the original free segment. */
+static inline void mergeSurroundingSegments(Tag *start_tag, Tag *end_tag) {
+  size_t new_size = start_tag->size + (start_tag - 1)->size +
+                    (end_tag + 1)->size + 2 * BOUNDARIES_SIZE;
+  *locateStartTag(start_tag - 1) = (Tag){ .size = new_size, .used = false };
+  *locateEndTag(end_tag + 1)     = (Tag){ .size = new_size, .used = false };
+}
 
 
 /********************** HELPERS ************************/
