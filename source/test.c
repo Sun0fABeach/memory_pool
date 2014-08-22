@@ -3,10 +3,13 @@
 #include <stdint.h>
 #include "mem_management.h"
 
+#define TAGSIZE 1
+
 int main() {
   init_pool();
   debugInfo();
 
+#if TAGSIZE==1
   puts("------------- Allocations --------------\n");
 
   printf("Trying to allocate segment size %d:\n", 6);
@@ -61,10 +64,9 @@ int main() {
   deallocate(p2);
   debugInfo();
 
-
+#elif TAGSIZE==4
   /* TESTS FOR TAGS SIZE 4 */
 
-/*
   printf("Trying to allocate segment size %d:\n", 56);
   void *p1 = allocate(56);
   debugInfo();
@@ -89,7 +91,7 @@ int main() {
   printf("Trying to allocate segment size %d:\n", 2);
   p1 = allocate(2);
   debugInfo();
-*/
+#endif
 
   return EXIT_SUCCESS;
 }

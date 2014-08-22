@@ -4,9 +4,17 @@
 #include <math.h>
 #include "mem_management.h"
 
+#define TAGSIZE 1
+
 typedef unsigned char byte;
 typedef struct {
+#if TAGSIZE == 1
   uint8_t size:7;
+#elif TAGSIZE == 2
+  uint16_t size:15;
+#elif TAGSIZE == 4
+  uint32_t size:31;
+#endif
   uint8_t used:1;
 } Tag;
 
@@ -35,8 +43,8 @@ static size_t pool_size,
 /*********** INITIALISATION / DESTRUCTION ***********/
 
 void init_pool() {
-  pool_size = pow(2, sizeof(Tag) * 8) / 2;   //calc pool size based on tag size
-  //pool_size = 128;
+  //pool_size = pow(2, sizeof(Tag) * 8) / 2;   //calc pool size based on tag size
+  pool_size = 256;
   pool_content_size = pool_size - BOUNDARIES_SIZE;
 
   memory_pool = calloc(1, pool_size);                   //init pool
@@ -202,16 +210,25 @@ void debugInfo() {
   Tag *next_tag = (Tag*)memory_pool;
   byte *pool_ending = memory_pool + pool_size;
   bool is_end_tag = false;
+  byte tag_placeholders = 0;
 
   for(byte *p = memory_pool, i = 0; p < pool_ending; p++, i++) {
+
     if(p == (byte*)next_tag) {
       printf("%d(%d)", next_tag->size, next_tag->used);
       next_tag = is_end_tag ? next_tag + 1 : locateEndTag(next_tag);
       is_end_tag = !is_end_tag;
+      tag_placeholders = sizeof(Tag) - 1;
     } else {
-      printf("%hhu", *p);
+      if(tag_placeholders) {
+        printf("-t-");
+        tag_placeholders--;
+      } else {
+        printf("%hhu", *p);
+      }
     }
     putchar((i+1) % 8 ? '\t' : '\n');
+
   }
   putchar('\n');
 }
