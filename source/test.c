@@ -84,6 +84,24 @@ int main() {
   printf("Deallocating segment size %d:\n", 120);
   deallocate(p2);
   debugInfo();
+  printf("Trying to allocate first segment size %d:\n", 60);
+  p1 = allocate(60);
+  debugInfo();
+  printf("Trying to allocate segment size %d:\n", 1);
+  p2 = allocate(1);
+  debugInfo();
+  printf("Trying to allocate second segment size %d:\n", 60);
+  p3 = allocate(60);
+  debugInfo();
+  printf("Deallocating first segment size %d:\n", 60);
+  deallocate(p1);
+  debugInfo();
+  printf("Trying to allocate segment size %d:\n", 58);
+  p1 = allocate(58);
+  debugInfo();
+  printf("Deallocating segment size %d:\n", 1);
+  deallocate(p2);
+  debugInfo();
 
 #elif TAGSIZE==4
   /* TESTS FOR TAGS SIZE 4 */

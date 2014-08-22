@@ -75,13 +75,10 @@ void *allocate(size_t requested_size) {
   if(!(segment_tag = find_usable_segment(requested_size)))
     return NULL;
 
-  //will allocate exact fit if segment can't hold requested size + bounds size
-  //or if segment has a size equal to the requested size + bounds size.
-  //for the second case, splitting would only create a fragment
-  //only consisting of bounds, without any content size.
-  if(requested_size + BOUNDARIES_SIZE < segment_tag->size)
+
+  if(requested_size + BOUNDARIES_SIZE <= segment_tag->size)
     allocateWithSplit(segment_tag, requested_size);
-  else
+  else //alloc exact fit if segment can't hold requested size + bounds size
     allocateExactFit(segment_tag);
 
   return segment_tag + 1;    //return pointer to first byte after tag
