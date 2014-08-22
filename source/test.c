@@ -42,13 +42,13 @@ int main() {
 
   puts("------------ Corner cases ------------\n");
 
-  printf("Trying to allocate segment size %d:\n", 123);
-  p1 = allocate(123);
+  printf("Trying to allocate segment size %d:\n", 124);
+  p1 = allocate(124);
   debugInfo();
   printf("Trying to allocate segment size %d:\n", 1);
   p2 = allocate(1);
   debugInfo();
-  printf("Deallocating segment size %d:\n", 123);
+  printf("Deallocating segment size %d:\n", 124);
   deallocate(p1);
   debugInfo();
   printf("Trying to allocate segment size %d:\n", 62);
@@ -61,6 +61,27 @@ int main() {
   deallocate(p1);
   debugInfo();
   printf("Deallocating second segment size %d:\n", 62);
+  deallocate(p2);
+  debugInfo();
+  printf("Trying to allocate segment size %d:\n", 1);
+  p1 = allocate(1);
+  debugInfo();
+  printf("Trying to allocate segment size %d:\n", 120);
+  p2 = allocate(120);
+  debugInfo();
+  printf("Trying to allocate segment size %d:\n", 1);
+  p3 = allocate(1);
+  debugInfo();
+  printf("Trying to allocate segment size %d:\n", 1);
+  p4 = allocate(1);
+  debugInfo();
+  printf("Deallocating first segment size %d:\n", 1);
+  deallocate(p1);
+  debugInfo();
+  printf("Deallocating second segment size %d:\n", 1);
+  deallocate(p3);
+  debugInfo();
+  printf("Deallocating segment size %d:\n", 120);
   deallocate(p2);
   debugInfo();
 
@@ -89,7 +110,19 @@ int main() {
   p1 = allocate(111);
   debugInfo();
   printf("Trying to allocate segment size %d:\n", 2);
-  p1 = allocate(2);
+  p2 = allocate(2);
+  debugInfo();
+  printf("Trying to deallocate segment size %d:\n", 111);
+  deallocate(p1);
+  debugInfo();
+  printf("Trying to allocate segment size %d:\n", 3);
+  p1 = allocate(3);
+  debugInfo();
+  printf("Trying to allocate segment size %d:\n", 5);
+  p2 = allocate(5);
+  debugInfo();
+  printf("Trying to allocate segment size %d:\n", 4);
+  p3 = allocate(4);
   debugInfo();
 #endif
 

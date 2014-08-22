@@ -44,7 +44,7 @@ static size_t pool_size,
 
 void init_pool() {
   //pool_size = pow(2, sizeof(Tag) * 8) / 2;   //calc pool size based on tag size
-  pool_size = 256;
+  pool_size = 128;
   pool_content_size = pool_size - BOUNDARIES_SIZE;
 
   memory_pool = calloc(1, pool_size);                   //init pool
@@ -71,9 +71,6 @@ void *allocate(size_t requested_size) {
 
   if(!requested_size || requested_size > pool_content_size)
     return NULL;
-
-  if(requested_size % 2)  //only multiples of 2 allocations allowed
-    requested_size += 1;
 
   if(!(segment_tag = find_usable_segment(requested_size)))
     return NULL;
