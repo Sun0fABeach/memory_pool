@@ -20,7 +20,7 @@ typedef struct {
 
 #define BOUNDARIES_SIZE (2 * (sizeof(Tag)))
 
-static inline Tag *find_usable_segment(size_t size);
+static inline Tag *findUsableSegment(size_t size);
 static inline void allocateExactFit(Tag *segment_tag);
 static inline void allocateWithSplit(Tag *segment_tag, size_t requested_size);
 static inline void mergePrecedingSegment(Tag *start_tag);
@@ -72,9 +72,8 @@ void *allocate(size_t requested_size) {
   if(!requested_size || requested_size > pool_content_size)
     return NULL;
 
-  if(!(segment_tag = find_usable_segment(requested_size)))
+  if(!(segment_tag = findUsableSegment(requested_size)))
     return NULL;
-
 
   if(requested_size + BOUNDARIES_SIZE <= segment_tag->size)
     allocateWithSplit(segment_tag, requested_size);
@@ -87,7 +86,7 @@ void *allocate(size_t requested_size) {
 
 /* checks whether a fitting free segment second can be found.
  * returns pointer to that segment or NULL, if none is found. */
-static inline Tag *find_usable_segment(size_t size) {
+static inline Tag *findUsableSegment(size_t size) {
   Tag *probe = (Tag*)memory_pool;
 
   do {
@@ -181,7 +180,7 @@ static inline void mergeSurroundingSegments(Tag *start_tag, Tag *end_tag) {
 /* returns corresponding end tag of given start tag. */
 static inline Tag *locateEndTag(Tag *start_tag) {
   return (Tag*)((byte*)start_tag + start_tag->size + sizeof(Tag));
-}                         //& ~1 ignores used flag
+}
 
 /* returns corresponding start tag of given end tag. */
 static inline Tag *locateStartTag(Tag *end_tag) {
