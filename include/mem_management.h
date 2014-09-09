@@ -1,7 +1,9 @@
 #include <stdio.h>
+#include <stdbool.h>
 
-/* call to setup the memory pool */
-void init_pool();
+/* call to setup the memory pool.
+ * returns true on success, false if needed memory could not be allocated. */
+bool init_pool();
 
 /* allocates memory if the requested size.
  * returns pointer to memory on success, NULL on failure. */
