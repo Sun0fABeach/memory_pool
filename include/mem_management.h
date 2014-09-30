@@ -3,7 +3,10 @@
 
 /* call to setup the memory pool.
  * returns true on success, false if needed memory could not be allocated. */
-bool init_pool();
+bool initPool();
+
+/* call to deallocate the memory pool. */
+void destroyPool();
 
 /* allocates memory if the requested size.
  * returns pointer to memory on success, NULL on failure. */

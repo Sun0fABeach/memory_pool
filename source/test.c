@@ -6,7 +6,7 @@
 #define TAGSIZE 1
 
 int main() {
-  init_pool();
+  initPool();
   debugInfo();
 
 #if TAGSIZE==1
@@ -144,6 +144,7 @@ int main() {
   debugInfo();
 #endif
 
+  destroyPool();
   return EXIT_SUCCESS;
 }
 

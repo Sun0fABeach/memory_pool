@@ -30,7 +30,6 @@ static inline Tag *locateEndTag(Tag *start_tag);
 static inline Tag *locateStartTag(Tag *end_tag);
 static inline bool segmentFree(Tag *segment_tag);
 static inline bool segmentFits(Tag *segment_tag, size_t requested_size);
-static inline void destroyPool();
 
 static byte *memory_pool;
 static Tag *pool_first_tag,
@@ -42,7 +41,7 @@ static size_t pool_size,
 
 /*********** INITIALISATION / DESTRUCTION ***********/
 
-bool init_pool() {
+bool initPool() {
   //pool_size = pow(2, sizeof(Tag) * 8) / 2;   //calc pool size based on tag size
   pool_size = 128;
   pool_content_size = pool_size - BOUNDARIES_SIZE;
@@ -59,8 +58,11 @@ bool init_pool() {
   return true;
 }
 
-static inline void destroyPool() {
-  free(memory_pool);
+void destroyPool() {
+  if(memory_pool) {
+    free(memory_pool);
+    memory_pool = NULL;
+  }
 }
 
 
@@ -130,8 +132,8 @@ static inline void allocateWithSplit(Tag *segment_tag, size_t requested_size) {
 /******************** DEALLOCATION ********************/
 
 /* public: deallocate segment. merge adjacent segments, if unused. */
-void deallocate(void *segment) {
-  Tag *start_tag = (Tag*)segment - 1;  //segment points to content
+void deallocate(void *segment_content) {
+  Tag *start_tag = (Tag*)segment_content - 1;
   Tag *end_tag = locateEndTag(start_tag);
 
   start_tag->used = false;
